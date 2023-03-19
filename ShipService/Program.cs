@@ -1,12 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Commons.Events;
-using Commons.Request;
+using Commons;
 using Core;
-using Core.Interfaces;
-using ShipService.Handler;
 
 Console.WriteLine("== Ship Order Request Handler ==");
+
+var messageBus = new InMemoryMessageBus();
+
+var orderProcessingSaga = new OrderProcessionSaga(messageBus);
+
+
 
 
 Console.ReadKey();

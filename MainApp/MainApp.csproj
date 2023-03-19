@@ -23,6 +23,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Commons\Commons.csproj" />
       <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\OrdersService\OrdersService.csproj" />
+      <ProjectReference Include="..\PaymentService\PaymentService.csproj" />
+      <ProjectReference Include="..\ShipService\ShipService.csproj" />
     </ItemGroup>
 
 </Project>

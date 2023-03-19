@@ -1,9 +1,8 @@
-using Commons.Events;
 using Core.Interfaces;
 
 namespace Commons.Request;
 
-public class ShipOrderRequest : IRequest<OrderShippedEvent>
+public class ShipOrderRequest : IRequest<string>
 {
-    public int OrderId { get; set; }
+    public string OrderId { get; set; }
 }

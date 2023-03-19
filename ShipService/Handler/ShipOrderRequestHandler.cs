@@ -1,15 +1,17 @@
-﻿using Commons.Events;
-using Commons.Request;
+﻿using Commons.Request;
 using Core.Interfaces;
 
 namespace ShipService.Handler;
 
-public class ShipOrderRequestHandler : IRequestHandler<ShipOrderRequest, OrderShippedEvent>
+public class ShipOrderRequestHandler : IRequestHandler<ShipOrderRequest, string>
 {
-    public Task<OrderShippedEvent> HandleAsync(ShipOrderRequest request)
+    public Task<string> Handle(ShipOrderRequest request)
     {
-        // Simulate shipping an order
-        var orderShippedEvent = new OrderShippedEvent {OrderId = request.OrderId};
-        return Task.FromResult(orderShippedEvent);
+        // Sipariş sevkiyat işlemini gerçekleştirin
+
+        request.OrderId = "123456789";
+
+
+        return Task.FromResult("Order shipped");
     }
 }

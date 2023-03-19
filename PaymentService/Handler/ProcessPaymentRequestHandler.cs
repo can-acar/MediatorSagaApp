@@ -1,15 +1,16 @@
-using Commons.Events;
 using Commons.Request;
 using Core.Interfaces;
 
 namespace PaymentService.Handler;
 
-public class ProcessPaymentRequestHandler : IRequestHandler<ProcessPaymentRequest, PaymentProcessedEvent>
+public class ProcessPaymentRequestHandler : IRequestHandler<ProcessPaymentRequest, bool>
 {
-    public Task<PaymentProcessedEvent> HandleAsync(ProcessPaymentRequest request)
+    public Task<bool> Handle(ProcessPaymentRequest request)
     {
-        // Simulate processing a payment
-        var paymentProcessedEvent = new PaymentProcessedEvent {OrderId = request.OrderId};
-        return Task.FromResult(paymentProcessedEvent);
+        // Ödeme işlemini gerçekleştirin
+        request.OrderId = "123456789";
+        request.Amount = 100;
+
+        return Task.FromResult(true);
     }
 }

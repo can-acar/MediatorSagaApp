@@ -1,9 +1,9 @@
-using Commons.Events;
 using Core.Interfaces;
 
 namespace Commons.Request;
 
-public class ProcessPaymentRequest : IRequest<PaymentProcessedEvent>
+public class ProcessPaymentRequest : IRequest<bool>
 {
-    public int OrderId { get; set; }
+    public string OrderId { get; set; }
+    public decimal Amount { get; set; }
 }
