@@ -1,42 +1,81 @@
+using System.Collections.Concurrent;
 using Core.Interfaces;
 
 namespace Core;
 
-public class InMemoryMessageBus : IMessageBus
+public class InMemoryMessageBus
 {
-    private readonly SubscriptionManager _subscriptionManager;
+    private readonly ConcurrentDictionary<string, List<Delegate>> _subscriptions;
 
     public InMemoryMessageBus()
     {
-        _subscriptionManager = new SubscriptionManager();
+        _subscriptions = new ConcurrentDictionary<string, List<Delegate>>();
     }
 
-    public void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : IEvent
-    {
-        _subscriptionManager.AddSubscription(handler);
-    }
 
-    public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : IEvent
+    public void Publish<T>(string channel, T message)
     {
-        var handlers = _subscriptionManager.GetHandlersForEvent<TEvent>();
+        if (string.IsNullOrEmpty(channel))
+            throw new ArgumentException("Channel name cannot be null or empty.", nameof(channel));
 
-        foreach (var handler in handlers)
+        if (_subscriptions.TryGetValue(channel, out var subscribers))
         {
-            await handler(@event);
+            foreach (var subscriber in subscribers)
+            {
+                var typedSubscriber = (Action<T>) subscriber;
+                typedSubscriber(message);
+            }
         }
     }
 
-    public async Task SubscribeAsync(Func<IEvent, Task> handler)
-    {
-        _subscriptionManager.AddSubscription(handler);
 
-        await Task.CompletedTask;
+    public void Subscribe<T>(string channel, Action<T> callback)
+    {
+        if (string.IsNullOrEmpty(channel))
+            throw new ArgumentException("Channel name cannot be null or empty.", nameof(channel));
+
+        if (callback == null)
+            throw new ArgumentNullException(nameof(callback));
+
+        var subscribers = _subscriptions.GetOrAdd(channel, _ => new List<Delegate>());
+        lock (subscribers)
+        {
+            subscribers.Add(callback);
+        }
     }
 
-    public Task UnSubscribeAsync(Func<IEvent, Task> handler)
+    public async Task<T> Receive<T>(string channel, CancellationToken cancellationToken = default)
     {
-        _subscriptionManager.RemoveSubscription(handler);
+        var tcs = new TaskCompletionSource<T>();
 
-        return Task.CompletedTask;
+        void Handler(T message)
+        {
+            tcs.TrySetResult(message);
+            Unsubscribe<T>(channel, Handler);
+        }
+
+        Subscribe<T>(channel, Handler);
+
+        using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+        {
+            return await tcs.Task.ConfigureAwait(false);
+        }
+    }
+
+    public void Unsubscribe<T>(string channel, Action<T> callback)
+    {
+        if (string.IsNullOrEmpty(channel))
+            throw new ArgumentException("Channel name cannot be null or empty.", nameof(channel));
+
+        if (callback == null)
+            throw new ArgumentNullException(nameof(callback));
+
+        if (_subscriptions.TryGetValue(channel, out var subscribers))
+        {
+            lock (subscribers)
+            {
+                subscribers.Remove(callback);
+            }
+        }
     }
 }

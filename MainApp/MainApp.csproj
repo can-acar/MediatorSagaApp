@@ -23,9 +23,16 @@
     <ItemGroup>
       <ProjectReference Include="..\Commons\Commons.csproj" />
       <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\MessageQueueService\MessageQueueService.csproj" />
       <ProjectReference Include="..\OrdersService\OrdersService.csproj" />
       <ProjectReference Include="..\PaymentService\PaymentService.csproj" />
       <ProjectReference Include="..\ShipService\ShipService.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="JKang.EventBus" Version="1.1.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     </ItemGroup>
 
 </Project>

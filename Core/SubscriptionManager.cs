@@ -4,45 +4,48 @@ namespace Core;
 
 public class SubscriptionManager
 {
-    private readonly IDictionary<Type, IList<Func<IEvent, Task>>> _subscriptions;
+    private readonly Dictionary<string, List<Action<object>>> _subscriptions = new();
 
     public SubscriptionManager()
     {
-        _subscriptions = new Dictionary<Type, IList<Func<IEvent, Task>>>();
     }
 
-    public void AddSubscription<TEvent>(Func<TEvent, Task> handler) where TEvent : IEvent
-    {
-        var key = typeof(TEvent);
 
-        if (!_subscriptions.TryGetValue(key, out var handlers))
+    public void AddSubscription<TEvent>(string channel,Action<TEvent> handler) where TEvent : IEvent
+    {
+        var eventType = typeof(TEvent);
+   
+        var handlerType = handler.GetType();
+
+        if (!HasSubscriptionForEvent(channel))
         {
-            handlers = new List<Func<IEvent, Task>>();
-            _subscriptions.Add(key, handlers);
+            _subscriptions.Add(channel, new List<Action<object>>());
         }
 
-        handlers.Add(@event => handler((TEvent) @event));
+        _subscriptions[channel].Add(@event => handler((TEvent) @event));
     }
 
-    public IEnumerable<Func<IEvent, Task>> GetHandlersForEvent<TEvent>() where TEvent : IEvent
+    private bool HasSubscriptionForEvent(string eventName)
     {
-        var key = typeof(TEvent);
-
-        if (_subscriptions.TryGetValue(key, out var handlers))
-        {
-            return handlers;
-        }
-
-        return Enumerable.Empty<Func<IEvent, Task>>();
+        return _subscriptions.ContainsKey(eventName);
     }
 
-    public void RemoveSubscription(Func<IEvent, Task> handler)
+    public void RemoveSubscription<TEvent>(Action<TEvent> handler) where TEvent : IEvent
     {
-        var key = _subscriptions.Keys.FirstOrDefault(k => _subscriptions[k].Contains(handler));
+        var eventName = typeof(TEvent).Name;
+        var handlerType = handler.GetType();
 
-        if (key != null)
+        if (!HasSubscriptionForEvent(eventName))
         {
-            _subscriptions[key].Remove(handler);
+            return;
         }
+
+        _subscriptions[eventName].Remove(@event => handler((TEvent) @event));
+    }
+    
+    public List<Action<object>> GetHandlersForEvent<TEvent>() where TEvent : IEvent
+    {
+        var eventName = typeof(TEvent).Name;
+        return _subscriptions[eventName];
     }
 }

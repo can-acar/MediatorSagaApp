@@ -2,19 +2,24 @@
 
 using Commons;
 using Commons.Models;
+using Commons.Request;
+using Commons.Response;
 using Core;
 
 Console.WriteLine("== Process Payment Request Handler ==");
-var messageBus = new InMemoryMessageBus();
 
-var orderProcessingSaga = new OrderProcessionSaga(messageBus);
+var messageBus = new InMemoryMessageBus();
 
 while (true)
 {
-    Console.ReadKey();
-    messageBus.Subscribe<OrderCreated>(handler: async @event =>
-    {
-        
-        Console.WriteLine($"Order created: {@event.OrderId}");
-    });
+    Console.WriteLine("PaymentService: Waiting for CreateOrderRequest...");
+
+    var request = await messageBus.Receive<CreatePaymentResponse>("OrderProcessing");
+
+    //
+    // Console.WriteLine($"OrderService: Order {response.OrderId} created, status: {response.Status}");
+    //
+    // messageBus.Publish("OrderProcessing", response);
+
+    Thread.Sleep(1000);
 }

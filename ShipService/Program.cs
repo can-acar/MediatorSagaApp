@@ -5,10 +5,6 @@ using Core;
 
 Console.WriteLine("== Ship Order Request Handler ==");
 
-var messageBus = new InMemoryMessageBus();
-
-var orderProcessingSaga = new OrderProcessionSaga(messageBus);
-
 
 
 
